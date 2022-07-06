@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/task-courier/static/css/main.b55ae5d9.css",
+    "main.js": "/task-courier/static/js/main.0de13405.js",
+    "index.html": "/task-courier/index.html",
+    "main.b55ae5d9.css.map": "/task-courier/static/css/main.b55ae5d9.css.map",
+    "main.0de13405.js.map": "/task-courier/static/js/main.0de13405.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.b55ae5d9.css",
+    "static/js/main.0de13405.js"
+  ]
+}
