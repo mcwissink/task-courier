@@ -176,6 +176,22 @@ export class SheetsProvider extends RecordsProvider {
         });
     });
 
+    update = log('provider:update', async (table: string, row: Array<string>) => {
+        const [id] = row;
+        const rowIndex = await this.getIndexById(table, id);
+        if (rowIndex === -1) {
+            return;
+        }
+        const start = this.getA1Notation(rowIndex, 0);
+        const end = this.getA1Notation(rowIndex + 1, row.length - 1);
+        await this.api.client.sheets.spreadsheets.values.update({
+            spreadsheetId: this.spreadsheetId,
+            valueInputOption: 'USER_ENTERED',
+            range: SheetsProvider.range(table, start, end),
+            values: [row],
+        });
+    });
+
     private getRowCount = async (table: string) => {
         const { body } = await this.api.client.sheets.spreadsheets.get({
 
@@ -289,7 +305,7 @@ export class SheetsProvider extends RecordsProvider {
         });
     });
 
-    generateCloneUrl = () => `${window.origin}/record-sage?spreadsheetId=${this.spreadsheetId}`;
+    generateCloneUrl = () => `${window.origin}/task-courier?spreadsheetId=${this.spreadsheetId}`;
 
     private static range = (table: string, start: string, end: string) => `'${table}'!${start}:${end}`;
 }

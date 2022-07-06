@@ -4,10 +4,10 @@ import { Paginated } from "./records"
 import { useRecords } from "./records-store";
 import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
+import { Input } from "./ui/Input";
 import { Progress } from "./ui/Progress";
 import { useLoading } from "./use-loading";
 import { useNavigate } from "react-router-dom";
-import { Label } from "./RecordView";
 
 export const RecordList: React.VFC = () => {
     const navigate = useNavigate();
@@ -26,11 +26,12 @@ export const RecordList: React.VFC = () => {
     }
 
     useEffect(() => {
-        loading(records.get)('chemical-application', parameters).then(setData);
-    }, [records, params]);
+        loading(records.get)('todo', parameters).then(setData);
+    }, [records, loading]);
 
-    const onDuplicateRows = (rows: string[][]) => () => {
-        navigate('records/add', { state: { rows } });
+    const onCheck = ([id, date, title, details, complete]: string[]) => async () => {
+        await records.update('todo', [id, date, title, details, complete === 'T' ? 'F' : 'T']);
+        loading(records.get)('todo', parameters).then(setData);
     };
 
     const rowsByDate = data.rows.reduce<Record<string, string[][]>>((acc, row) => {
@@ -52,23 +53,23 @@ export const RecordList: React.VFC = () => {
             <div className="flex flex-col gap-4">
                 {Object.entries(rowsByDate).map(([date, rows]) => (
                     <React.Fragment key={date}>
+
                         <div className="flex items-end">
                             <b className="grow">{date}</b>
-                            <Button onClick={onDuplicateRows(rows)}>duplicate</Button>
                         </div>
-                        {rows.map(([id, _date, field, crop, acres, chemical, registration, amount]) => (
-                            <Link key={id} to={`/records/${id}`} className="no-underline">
-                                <Card className="flex items-center">
-                                    <div className="grid gap-1 grid-cols-1 md:grid-cols-2 w-full">
-                                        <Label label="field">{field}</Label>
-                                        <Label label="crop">{crop}</Label>
-                                        <Label label="acres">{acres}</Label>
-                                        <Label label="chemical">{chemical} [{registration}]</Label>
-                                        <Label label="amount">{amount}</Label>
-                                    </div>
+                        {rows.map((row) => {
+                            const [id, _date, title, _details, complete] = row;
+                            return (
+                                <Card key={id} className="flex items-center">
+                                    <Input type="checkbox" checked={complete === 'T'} onChange={onCheck(row)} />
+                                    <div className="grow">{title}</div>
+
+                                    <Link key={id} to={`/records/${id}`}>
+                                        edit
+                                    </Link>
                                 </Card>
-                            </Link>
-                        ))}
+                            );
+                        })}
                     </React.Fragment>
                 ))}
             </div>

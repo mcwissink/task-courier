@@ -6,7 +6,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 ReactDOM.render(
     <React.StrictMode>
-        <BrowserRouter basename="/record-sage">
+        <BrowserRouter basename="/task-courier">
             <Router />
         </BrowserRouter>
     </React.StrictMode>,

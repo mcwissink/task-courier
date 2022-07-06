@@ -31,7 +31,7 @@ export interface Paginated<Rows> extends Pagination {
 }
 
 export class Records {
-    private static SCHEMA_KEY = 'schema';
+    private static SCHEMA_KEY = 'task-courier-schema';
     public Setup: React.VFC;
     public Login: React.VFC;
     private provider: RecordsProvider;
@@ -108,6 +108,14 @@ export class Records {
         }
     });
 
+    update = log('records:update', async (table: string, row: Array<string>) => {
+        await this.cache.update(table, row);
+        const response = online(this.sync)();
+        if (!this.schema[table].cache) {
+            await response;
+        }
+    });
+
     get = log('records:get', async (table: string, options?: GetOptions): Promise<Paginated<string[][]>> => {
         const cache = await this.cache.get(table, options);
         return this.schema[table].cache ? cache : await online(this.provider.get, cache)(table, options);
@@ -144,6 +152,9 @@ export class Records {
                         break;
                     case JournalAction.Delete:
                         await log(`sync:deleting:${entry.id}`, this.provider.delete)(entry.table, entry.payload);
+                        break;
+                    case JournalAction.Update:
+                        await log(`sync:updating:${entry.id}`, this.provider.update)(entry.table, entry.payload);
                         break;
                 }
                 return true;
@@ -200,7 +211,7 @@ export class RecordsProvider {
     async find(_table: string, _id: string): Promise<string[]> {
         throw new Error(`'find' is not implemented`);
     }
-    async update(_table: string): Promise<any> {
+    async update(_table: string, _row: Array<string>): Promise<any> {
         throw new Error(`'update' is not implemented`);
     }
     async delete(_table: string, _id: string): Promise<any> {

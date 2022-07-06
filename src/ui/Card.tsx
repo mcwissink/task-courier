@@ -9,7 +9,10 @@ export const Card: React.FC<React.ComponentPropsWithoutRef<'div'>> = ({
     return (
         <div
             {...props}
-            className={cn('border border-gray-500 border-solid p-4 bg-gray-100 rounded hover:bg-gray-200 cursor-pointer', className)}
+            className={cn(
+                'border border-gray-500 border-solid p-4 bg-gray-100 rounded',
+                className
+            )}
         >
             {children}
         </div>

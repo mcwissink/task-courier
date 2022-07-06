@@ -4,6 +4,7 @@ import { log } from './app-store';
 export enum JournalAction {
     Insert = 'insert',
     Delete = 'delete',
+    Update = 'update',
 }
 
 interface JournalPayload<Action extends JournalAction, Payload> {
@@ -15,6 +16,7 @@ interface JournalPayload<Action extends JournalAction, Payload> {
 
 type JournalEntry =
     | JournalPayload<JournalAction.Insert, string[]>
+    | JournalPayload<JournalAction.Update, string[]>
     | JournalPayload<JournalAction.Delete, string>
 
 type DatabaseSchema = Schema<IDBObjectStoreParameters | undefined>
@@ -62,6 +64,13 @@ class Database {
             .add(row)
     ));
 
+    update = log('db:udpate', async (table: string, row: Record<string, any>) => this.resolve(
+        this.db
+            .transaction(table, 'readwrite')
+            .objectStore(table)
+            .put(row)
+    ));
+
     get = log('db:get', async (table: string): Promise<any[]> => this.resolve(
         this.db
             .transaction(table, 'readonly')
@@ -106,7 +115,7 @@ class Database {
 class Journal {
     private static ENTRY = 'entry';
     constructor(
-        private db = new Database('record-sage-journal'),
+        private db = new Database('task-courier-journal'),
     ) { }
 
     get = (): Promise<JournalEntry[]> => this.db.get(Journal.ENTRY);
@@ -131,7 +140,7 @@ export class Cache {
     private syncing = false;
     private _schema?: DatabaseSchema;
     constructor(
-        private db = new Database('record-sage'),
+        private db = new Database('task-courier'),
         public journal = new Journal(),
     ) { }
 
@@ -166,6 +175,15 @@ export class Cache {
             payload: row,
             table,
             action: JournalAction.Insert,
+        });
+    }
+
+    update = async (table: string, row: string[]) => {
+        await this.db.update(table, this.convertRowArray(table, row))
+        await this.journal.insert({
+            payload: row,
+            table,
+            action: JournalAction.Update,
         });
     }
 
